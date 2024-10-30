@@ -3,6 +3,21 @@
 public class Main {
 
     static Thread[] threadArr = new Thread[1000];
-    
+    public static void main(String[] args) {
+        for(int i = 0; i < threadArr.length; i++){
+            threadArr[i] = new Thread(new countToOneMillion());
+            threadArr[i].run();
+        }
+    }
+}
+
+class countToOneMillion implements Runnable {
+    @Override
+    public void run() {
+        int sum = 0;
+        for(int i = 1; i < 1000000; i++) {
+            sum = sum + i;
+        }
+    }
 }
 
