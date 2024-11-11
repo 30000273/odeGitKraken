@@ -8,6 +8,10 @@ public class Main {
             threadArr[i] = new Thread(new countToOneMillion());
             threadArr[i].run();
         }
+        for(int i = 0; i < threadArr.length; i++){
+            System.out.println(threadArr[i].toString());
+        }
+
     }
 }
 
