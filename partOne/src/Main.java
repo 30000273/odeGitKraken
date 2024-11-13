@@ -1,42 +1,49 @@
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 public class Main {
-    // Shared variable to store the total count
-    private static final AtomicLong total = new AtomicLong(0);
-    private static final int THREAD_COUNT = 1000;
 
     public static void main(String[] args) {
-        // Array to store the threads
-        Thread[] threads = new Thread[THREAD_COUNT];
+        int numThreads = 1000;
 
-        // Create 1000 threads
-        for (int i = 0; i < THREAD_COUNT; i++) {
-            threads[i] = new Thread(() -> {
-                long count = countToOneMillion();
-                total.addAndGet(count);
-            });
-            threads[i].start();
+        Callable<Long> callableTask = () ->
+        {
+            Long count = 0L;
+            for (int i = 0; i < 1000000; i++) {
+                count++;
+            }
+            return count;
+        };
+
+        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+        List<Future<Long>> futures = new ArrayList<>();
+
+        long startTime = System.currentTimeMillis();
+
+        for (int i = 0; i < numThreads; i++) {
+            futures.add(executorService.submit(callableTask));
         }
 
-        // Wait for all threads to finish
-        for (int i = 0; i < THREAD_COUNT; i++) {
+        long totCount = 0;
+        for (Future<Long> future : futures) {
             try {
-                threads[i].join();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                System.out.println("Thread interrupted: " + e.getMessage());
+                totCount += future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
             }
         }
 
-        // Print the total count
-        System.out.println("Total count from all threads: " + total.get());
-    }
+        long endTime = System.currentTimeMillis();
+        long totTime = endTime - startTime;
 
-    // Method to count numbers between 1 and 1 million
-    private static long countToOneMillion() {
-        long count = 0;
-        for (int i = 1; i <= 1_000_000; i++) {
-            count++;
-        }
-        return count;
+        System.out.println("Total " + totCount);
+        System.out.println("Time: " + totTime);
+
+        executorService.shutdown();
     }
 }
